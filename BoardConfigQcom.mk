@@ -1,6 +1,9 @@
 include hardware/qcom-caf/common/qcom_boards.mk
 include hardware/qcom-caf/common/qcom_defs.mk
 
+B_FAMILY := msm8974
+B64_FAMILY := msm8992 msm8994
+
 UM_3_18_HAL_FAMILY := msm8996
 UM_4_4_HAL_FAMILY := msm8998
 
@@ -271,6 +274,10 @@ else ifeq ($(TARGET_USES_YCRCB_VENUS_CAMERA_PREVIEW),true)
     SOONG_CONFIG_qtidisplay_target_uses_ycrcb_venus_camera_preview := true
 endif
 
+ifneq ($(filter $(B_FAMILY) $(B64_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    TARGET_USES_QCOM_BSP := true
+endif
+
 # Tell HALs that we're compiling an AOSP build with an in-line kernel
 TARGET_COMPILE_WITH_MSM_KERNEL := true
 
@@ -305,6 +312,10 @@ ifneq ($(filter $(UM_6_1_FAMILY) $(UM_6_6_FAMILY),$(TARGET_BOARD_PLATFORM)),)
 endif
 
 TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS ?= 0
+
+ifneq ($(filter $(B_FAMILY) $(B64_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS += | (1 << 10)
+endif
 
 # Mark GRALLOC_USAGE_EXTERNAL_DISP as valid gralloc bit
 TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS += | (1 << 13)
@@ -348,7 +359,11 @@ $(call soong_config_set,qtidisplay,gralloc_handle_has_custom_content_md_reserved
 $(call soong_config_set,qtidisplay,gralloc_handle_has_reserved_size,$(TARGET_GRALLOC_HANDLE_HAS_RESERVED_SIZE))
 $(call soong_config_set,qtidisplay,gralloc_handle_has_ubwcp_format,$(TARGET_GRALLOC_HANDLE_HAS_UBWCP_FORMAT))
 
-ifneq ($(filter $(UM_3_18_HAL_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+ifneq ($(filter $(B_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    QCOM_HARDWARE_VARIANT := msm8974
+else ifneq ($(filter $(B64_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    QCOM_HARDWARE_VARIANT := msm8994
+else ifneq ($(filter $(UM_3_18_HAL_FAMILY),$(TARGET_BOARD_PLATFORM)),)
     QCOM_HARDWARE_VARIANT := msm8996
 else ifneq ($(filter $(UM_4_9_LEGACY_FAMILY),$(TARGET_BOARD_PLATFORM)),)
     QCOM_HARDWARE_VARIANT := msm8953
